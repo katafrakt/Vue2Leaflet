@@ -59,7 +59,6 @@ const props = {
     default: undefined,
   },
   maxBounds: {
-    custom: true,
     default: undefined,
   },
   zoom: {
@@ -107,6 +106,7 @@ export default {
     Object.assign(options, {
       minZoom: this.minZoom,
       maxZoom: this.maxZoom,
+      maxBounds: this.maxBounds,
       worldCopyJump: this.worldCopyJump,
       crs: this.crs,
     });
@@ -165,12 +165,16 @@ export default {
       }
     },
     setBounds(newVal, oldVal) {
-      this.setMaxBounds(this.maxBounds);
-
-      if (!(newVal && newVal.isValid())) {
+      if (!newVal) {
         return;
       }
-
+      if (newVal instanceof L.LatLngBounds) {
+        if (!newVal.isValid()) {
+          return;
+        }
+      } else if (!Array.isArray(newVal)) {
+        return;
+      }
       var options = {};
       if (this.padding) {
         options.padding = this.padding;
@@ -183,13 +187,6 @@ export default {
         }
       }
       this.mapObject.fitBounds(newVal, options);
-    },
-    setMaxBounds(newVal, oldVal) {
-      if (!(newVal && newVal.isValid())) {
-        return;
-      }
-
-      this.mapObject.setMaxBounds(newVal);
     },
     setPaddingBottomRight(newVal, oldVal) {
       this.paddingBottomRight = newVal;
